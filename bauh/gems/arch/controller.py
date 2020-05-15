@@ -30,7 +30,7 @@ from bauh.commons.html import bold
 from bauh.commons.system import SystemProcess, ProcessHandler, new_subprocess, run_cmd, SimpleProcess
 from bauh.gems.arch import BUILD_DIR, aur, pacman, makepkg, message, confirmation, disk, git, \
     gpg, URL_CATEGORIES_FILE, CATEGORIES_FILE_PATH, CUSTOM_MAKEPKG_FILE, SUGGESTIONS_FILE, \
-    CONFIG_FILE, get_icon_path, database, mirrors, sorting, cpu_manager, ARCH_CACHE_PATH
+    CONFIG_FILE, get_icon_path, database, mirrors, sorting, cpu_manager, ARCH_CACHE_PATH, UPDATES_IGNORED_FILE
 from bauh.gems.arch.aur import AURClient
 from bauh.gems.arch.config import read_config
 from bauh.gems.arch.dependencies import DependenciesAnalyser
@@ -2244,5 +2244,35 @@ class ArchManager(SoftwareManager):
                                      body=self.i18n['arch.custom_action.clean_cache.fail'],
                                      type_=MessageType.ERROR)
                 return False
+
+        return True
+
+    def ignore_update(self, pkg: SoftwarePackage):
+        if os.path.exists(UPDATES_IGNORED_FILE):
+            with open(UPDATES_IGNORED_FILE) as f:
+                ignored = {line.strip() for line in f.read().split('\n') if line}
+        else:
+            ignored = None
+
+        if not ignored or pkg.name not in ignored:
+            with open(UPDATES_IGNORED_FILE, 'a+') as f:
+                f.write('{}\n'.format(pkg.name))
+
+    def revert_ignored_update(self, pkg: SoftwarePackage) -> bool:
+        if not os.path.exists(UPDATES_IGNORED_FILE):
+            return False
+
+        ignored = []
+        with open(UPDATES_IGNORED_FILE) as f:
+            for line in f.read().split('\n'):
+                if line:
+                    clean_line = line.strip()
+
+                    if clean_line and clean_line != pkg.name:
+                        ignored.append(clean_line)
+
+        if ignored:
+            with open(UPDATES_IGNORED_FILE, 'w+') as f:
+                f.writelines(ignored)
 
         return True
