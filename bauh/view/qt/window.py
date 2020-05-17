@@ -1271,12 +1271,11 @@ class ManageWindow(QWidget):
         self.finish_action()
 
         if res['success']:
-            # TODO i18n
             self.table_apps.update_package(res['pkg'])
             dialog.show_message(title=self.i18n['success'].capitalize(),
-                                body=self.i18n['action.{}.success'.format(res['action'])],
+                                body=self.i18n['action.{}.success'.format(res['action'])].format(bold(res['pkg'].model.name)),
                                 type_=MessageType.INFO)
         else:
             dialog.show_message(title=self.i18n['fail'].capitalize(),
-                                body=self.i18n['action.{}.fail'.format(res['action'])],
+                                body=self.i18n['action.{}.fail'.format(res['action'])].format(bold(res['pkg'].model.name)),
                                 type_=MessageType.ERROR)

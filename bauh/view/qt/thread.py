@@ -920,9 +920,11 @@ class IgnorePackageUpdates(AsyncAction):
         if self.pkg:
             try:
                 if self.pkg.model.is_update_ignored():
-                    res = {'action': 'revert', 'success': self.manager.revert_ignored_update(self.pkg.model), 'pkg': self.pkg}
+                    self.manager.revert_ignored_update(self.pkg.model)
+                    res = {'action': 'ignore_updates_reverse', 'success': not self.pkg.model.is_update_ignored(), 'pkg': self.pkg}
                 else:
-                    res = {'action': 'ignore', 'success': self.manager.ignore_update(self.pkg.model), 'pkg': self.pkg}
+                    self.manager.ignore_update(self.pkg.model)
+                    res = {'action': 'ignore_updates', 'success': self.pkg.model.is_update_ignored(), 'pkg': self.pkg}
 
                 self.notify_finished(res)
 
